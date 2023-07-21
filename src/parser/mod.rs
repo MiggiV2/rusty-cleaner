@@ -3,13 +3,22 @@ use std::io::{BufRead, BufReader};
 
 mod test_parser;
 
-pub struct CSVParser {
-    file_path: String,
+pub struct Message {
+    pub id: String,
+    pub channel_id: String,
 }
 
-pub struct Message {
-    id: String,
-    channel_id: String,
+impl Message {
+    pub fn new(channel_id: String, id: String) -> Self {
+        Self {
+            id,
+            channel_id,
+        }
+    }
+}
+
+pub struct CSVParser {
+    file_path: String,
 }
 
 impl CSVParser {
@@ -50,18 +59,24 @@ impl CSVParser {
         if list.len() < 3 {
             return Err(format!("Expected min. 3 commas! Found {}", list.len()));
         }
+        let id = list.first().expect("Checked").to_string();
+
         if channel_id.is_none() {
             return Err(String::from("Can't find channel id in file path!"));
         }
+        let channel_id = channel_id.expect("Checked").to_string();
+        let msg = Message::new(channel_id, id);
 
-        let msg = Message {
-            id: list.first().unwrap().to_string(),
-            channel_id: channel_id.expect("Checked").to_string(),
-        };
         let is_id_valid = msg.id.parse::<u64>().is_ok();
         if !is_id_valid {
             return Err(format!("ID should be a number -> {}", msg.id));
         }
+
+        let is_channel_valid = msg.channel_id.parse::<u64>().is_ok();
+        if !is_channel_valid {
+            return Err(format!("Channel ID should be a number -> {}", msg.id));
+        }
+
         Ok(msg)
     }
 
