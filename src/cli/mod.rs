@@ -3,6 +3,8 @@ use std::io;
 use std::io::Write;
 use std::time::Duration;
 
+use rand::{Rng, thread_rng};
+
 use crate::network::Cleaner;
 use crate::parser::CSVParser;
 
@@ -61,7 +63,8 @@ impl CLI {
                 }
                 println!("channel:{} - id:{}", msg.channel_id, msg.id);
                 self.cleaner.delete_simple(msg);
-                thread::sleep(Duration::from_millis(1200));
+                let delay = thread_rng().gen_range(4000..7500);
+                thread::sleep(Duration::from_millis(delay));
             }
 
             if !channel_id.is_empty() {
