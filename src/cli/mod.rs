@@ -1,6 +1,7 @@
-use std::{env, fs};
+use std::{env, fs, thread};
 use std::io;
 use std::io::Write;
+use std::time::Duration;
 
 use crate::network::Cleaner;
 use crate::parser::CSVParser;
@@ -40,6 +41,14 @@ impl CLI {
             return Some("package_path dont exists or can't be read".to_string());
         }
 
+        let removed_dir = fs::read_dir(self.package_path.to_string() + "/rusty-cleaned");
+        if removed_dir.is_err() {
+            let removed_exist = fs::create_dir(self.package_path.to_string() + "/rusty-cleaned");
+            if let Err(_) = removed_exist {
+                return Some("Failed to create removed folder!".to_string());
+            }
+        }
+
         let package = package.unwrap();
         for channel_dir in package {
             let channel = channel_dir.unwrap().path().display().to_string();
@@ -51,13 +60,15 @@ impl CLI {
                     channel_id = msg.channel_id.to_string();
                 }
                 println!("channel:{} - id:{}", msg.channel_id, msg.id);
+                self.cleaner.delete_simple(msg);
+                thread::sleep(Duration::from_millis(1200));
             }
 
             if !channel_id.is_empty() {
-                let new_name = format!("{}/removed/{}", self.package_path.to_string(), channel_id);
-                let result = fs::rename(channel.to_string(), new_name);
+                let new_name = format!("{}/rusty-cleaned/c{}", self.package_path.to_string(), channel_id);
+                let result = fs::rename(channel.to_string(), new_name.to_string());
                 if let Err(e) = result {
-                    eprintln!("Failed to move - {} - {}", e.to_string(), channel);
+                    eprintln!("Failed to move - {} from {} to {}", e.to_string(), channel, new_name);
                 }
             }
         }
@@ -72,6 +83,6 @@ impl CLI {
             .read_line(&mut user_input)
             .expect("Failed to read line");
 
-        user_input
+        user_input.trim().to_string()
     }
 }
