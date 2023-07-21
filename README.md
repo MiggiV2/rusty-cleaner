@@ -11,7 +11,7 @@ In a vew days you will receive your data.
 
 ### Build from source
 
-Run `cargo run` to simple run it.
+Run `cargo run` to simple run it.  
 Run `cargo build --release && ./target/release/rusty-cleaner` to run the optimized version.
 
 ### Use releases
