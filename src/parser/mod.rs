@@ -29,7 +29,7 @@ impl CSVParser {
     }
 
     pub fn parse_file(&self) -> Vec<Message> {
-        let file = File::open(self.file_path.to_string() + "\\messages.csv").unwrap();
+        let file = File::open(self.file_path.to_string() + std::path::MAIN_SEPARATOR_STR + "messages.csv").unwrap();
         let reader = BufReader::new(file);
         let mut messages = vec![];
 
