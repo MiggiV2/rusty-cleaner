@@ -38,7 +38,7 @@ impl CLI {
     }
 
     pub fn delete_all(&self) -> Option<String> {
-        let package = fs::read_dir(self.package_path.to_string() + "/messages");
+        let package = fs::read_dir(self.package_path.to_string() + "\\messages");
         if package.is_err() {
             return Some("package_path dont exists or can't be read".to_string());
         }
@@ -62,7 +62,7 @@ impl CLI {
                     channel_id = msg.channel_id.to_string();
                 }
                 println!("channel:{} - id:{}", msg.channel_id, msg.id);
-                self.cleaner.delete_simple(msg);
+                // self.cleaner.delete_simple(msg);
                 let delay = thread_rng().gen_range(4000..7500);
                 thread::sleep(Duration::from_millis(delay));
             }
