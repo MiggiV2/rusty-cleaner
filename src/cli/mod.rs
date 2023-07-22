@@ -1,12 +1,15 @@
 use std::{env, fs, thread};
 use std::io;
 use std::io::Write;
+use std::path::MAIN_SEPARATOR_STR;
 use std::time::Duration;
 
 use rand::{Rng, thread_rng};
 
 use crate::network::Cleaner;
 use crate::parser::CSVParser;
+
+mod error_log;
 
 pub struct CLI {
     cleaner: Cleaner,
@@ -38,17 +41,13 @@ impl CLI {
     }
 
     pub fn delete_all(&self) -> Option<String> {
-        let package = fs::read_dir(self.package_path.to_string() + std::path::MAIN_SEPARATOR_STR + "messages");
+        let package = fs::read_dir(self.package_path.to_string() + MAIN_SEPARATOR_STR + "messages");
         if package.is_err() {
             return Some("package_path dont exists or can't be read".to_string());
         }
 
-        let removed_dir = fs::read_dir(self.package_path.to_string() + "/rusty-cleaned");
-        if removed_dir.is_err() {
-            let removed_exist = fs::create_dir(self.package_path.to_string() + "/rusty-cleaned");
-            if let Err(_) = removed_exist {
-                return Some("Failed to create removed folder!".to_string());
-            }
+        if let Some(value) = self.create_missing_dir("rusty-cleaned") {
+            return Some(value);
         }
 
         let package = package.unwrap();
@@ -62,7 +61,7 @@ impl CLI {
                     channel_id = msg.channel_id.to_string();
                 }
                 println!("channel:{} - id:{}", msg.channel_id, msg.id);
-                self.cleaner.delete_simple(msg);
+                self.cleaner.delete_simple(msg, &self);
                 let delay = thread_rng().gen_range(4000..7500);
                 thread::sleep(Duration::from_millis(delay));
             }

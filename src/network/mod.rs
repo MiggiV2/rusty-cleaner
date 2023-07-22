@@ -1,5 +1,6 @@
 use ureq::{Error, Response};
 
+use crate::cli::CLI;
 use crate::parser::Message;
 
 pub struct Cleaner {
@@ -15,13 +16,24 @@ impl Cleaner {
         }
     }
 
-    pub fn delete_simple(&self, msg: Message) {
+    pub fn delete_simple(&self, msg: Message, cli: &CLI) {
+        let copy = Message::new(msg.channel_id.to_string(), msg.id.to_string());
+        let mut has_error = false;
+
         match self.delete_msg(msg) {
             Ok(r) => {
-                self.handle_response(r);
+                has_error = self.handle_response(r);
             }
             Err(e) => {
                 println!("Request failed! {}", e.to_string());
+                has_error = true
+            }
+        }
+
+        if has_error {
+            let res = cli.save_failed_msg(copy);
+            if res.is_some() {
+                eprintln!("Failed to store failed msg -> {}", res.unwrap());
             }
         }
     }
@@ -36,13 +48,18 @@ impl Cleaner {
             .call()
     }
 
-    fn handle_response(&self, r: Response) {
+    /**
+    return true on error!
+     */
+    fn handle_response(&self, r: Response) -> bool {
         if r.status() == 204 {
             println!("Message deleted!");
+            return false;
         } else {
             eprintln!("Unexpected response code {}\nBody:{}",
                       r.status(),
                       r.into_string().unwrap_or("No Body".to_string()));
         }
+        return true;
     }
 }
