@@ -1,3 +1,6 @@
+use std::thread;
+use std::time::Duration;
+
 use ureq::{Error, Response};
 
 use crate::cli::CLI;
@@ -52,14 +55,26 @@ impl Cleaner {
     return true on error!
      */
     fn handle_response(&self, r: Response) -> bool {
-        if r.status() == 204 {
-            println!("Message deleted!");
-            return false;
-        } else {
-            eprintln!("Unexpected response code {}\nBody:{}",
-                      r.status(),
-                      r.into_string().unwrap_or("No Body".to_string()));
+        match r.status() {
+            204 => {
+                println!("Message deleted!");
+                false
+            }
+            403 => {
+                eprintln!("Forbidden");
+                false // dont save as failed -> dont try again!
+            }
+            429 => {
+                eprintln!("Too Many Requests");
+                thread::sleep(Duration::from_secs(2));
+                true
+            }
+            _ => {
+                eprintln!("Unexpected response code {}\nBody:{}",
+                          r.status(),
+                          r.into_string().unwrap_or("No Body".to_string()));
+                true
+            }
         }
-        return true;
     }
 }
