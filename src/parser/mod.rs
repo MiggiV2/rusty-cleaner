@@ -29,9 +29,14 @@ impl CSVParser {
     }
 
     pub fn parse_file(&self) -> Vec<Message> {
-        let file = File::open(self.file_path.to_string() + std::path::MAIN_SEPARATOR_STR + "messages.csv").unwrap();
-        let reader = BufReader::new(file);
+        let path = self.file_path.to_string() + std::path::MAIN_SEPARATOR_STR + "messages.csv";
         let mut messages = vec![];
+        let file = File::open(path);
+        if file.is_err() {
+            eprintln!("Failed to open message.csv! -> {}", file.err().unwrap());
+            return messages;
+        }
+        let reader = BufReader::new(file.expect("Checked"));
 
         for (index, line) in reader.lines().enumerate() {
             if index == 0 {
