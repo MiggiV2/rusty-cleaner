@@ -18,7 +18,7 @@ impl Cleaner {
 
     pub fn delete_simple(&self, msg: Message, cli: &CLI) {
         let copy = Message::new(msg.channel_id.to_string(), msg.id.to_string());
-        let mut has_error = false;
+        let has_error;
 
         match self.delete_msg(msg) {
             Ok(r) => {
