@@ -10,6 +10,7 @@ use crate::network::Cleaner;
 use crate::parser::CSVParser;
 
 mod error_log;
+mod welcome;
 
 pub struct CLI {
     cleaner: Cleaner,
@@ -29,6 +30,8 @@ impl CLI {
         if package.is_err() {
             return Err("package_path dont exists or can't be read".to_string());
         }
+
+        Self::print_welcome();
 
         print!("To delete your messages for you, I need your access token to Discord\nToken: ");
         let token = Self::ask_for_input();
@@ -61,7 +64,7 @@ impl CLI {
                     channel_id = msg.channel_id.to_string();
                 }
                 println!("channel:{} - id:{}", msg.channel_id, msg.id);
-                self.cleaner.delete_simple(msg, &self);
+                // self.cleaner.delete_simple(msg, &self);
                 let delay = thread_rng().gen_range(4000..7500);
                 thread::sleep(Duration::from_millis(delay));
             }
