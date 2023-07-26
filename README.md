@@ -1,4 +1,4 @@
-# Rust Cleaner
+# Rusty Cleaner
 
 A Rust program to delete all Discord messages via discord-package.zip.
 
@@ -17,4 +17,4 @@ Run `cargo build --release && ./target/release/rusty-cleaner` to run the optimiz
 ### Use releases
 
 Go to https://gitea.familyhainz.de/Miggi/rusty-cleaner/releases and download the latest version  
-Run `./rusty-cleaner` to start the program
+On Linux or macOS, run `./rusty-cleaner-* discord-packge` to start the program
