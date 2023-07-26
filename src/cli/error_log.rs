@@ -6,14 +6,34 @@ use crate::cli::CLI;
 use crate::parser::Message;
 
 impl CLI {
-    pub fn save_failed_msg(&self, msg: Message) -> Option<String> {
+    pub fn save_failed_msg(&self, msg: &Message) -> Option<String> {
         let channel_dir = format!("failed_msg{}{}", MAIN_SEPARATOR_STR, msg.channel_id.to_string());
-        if let Some(value) = self.create_missing_dir(channel_dir.as_str()) {
-            return Some(value);
+        if let Some(error_msg) = self.create_missing_dir(channel_dir.as_str()) {
+            return Some(error_msg);
         }
 
         let path = self.package_path.to_string() + MAIN_SEPARATOR_STR + channel_dir.as_str()
             + MAIN_SEPARATOR_STR + "messages.csv";
+
+        let contents = self.read_file(msg, &path);
+        self.save_msg(path, contents);
+        None
+    }
+
+    fn save_msg(&self, path: String, contents: String) {
+        let file = File::create(path.to_string());
+        if file.is_err() {
+            eprintln!("Can't create message.csv -> {} - {}", path, file.err().unwrap());
+        } else {
+            let mut file = file.expect("Checked");
+            let res = file.write_all(contents.as_bytes());
+            if res.is_err() {
+                eprintln!("Can't write to file!");
+            }
+        }
+    }
+
+    fn read_file(&self, msg: &Message, path: &String) -> String {
         let mut contents = "ID,Timestamp,Contents,Attachments\n".to_string()
             + msg.id.as_str() + ",NULL,NULL,NULL";
         match File::open(path.to_string()) {
@@ -28,18 +48,7 @@ impl CLI {
             }
             Err(_) => {}
         }
-        let file = File::create(path.to_string());
-        if file.is_err() {
-            eprintln!("Can't create message.csv -> {} - {}", path, file.err().unwrap());
-        } else {
-            let mut file = file.expect("Checked");
-            let res = file.write_all(contents.as_bytes());
-            if res.is_err() {
-                eprintln!("Can't write to file!");
-            }
-        }
-
-        None
+        contents
     }
 
     pub(in crate::cli) fn create_missing_dir(&self, dir: &str) -> Option<String> {

@@ -11,6 +11,7 @@ use crate::parser::{CSVParser, Message};
 
 mod error_log;
 mod welcome;
+mod helper;
 
 pub struct CLI {
     cleaner: Cleaner,
@@ -68,18 +69,6 @@ impl CLI {
         None
     }
 
-    fn move_finished(&mut self, channel: String) {
-        if !self.current_channel_id.is_empty() {
-            let new_name = format!("{}/rusty-cleaned/c{}",
-                                   self.package_path.to_string(),
-                                   self.current_channel_id);
-            let result = fs::rename(channel.to_string(), new_name.to_string());
-            if let Err(e) = result {
-                eprintln!("Failed to move - {} from {} to {}", e.to_string(), channel, new_name);
-            }
-        }
-    }
-
     fn purge_channel(&mut self, messages: Vec<Message>) {
         let mut i = 0;
         let mut last_print_progress = 0.0;
@@ -91,8 +80,7 @@ impl CLI {
                 println!("\nChannel: {}", self.current_channel_id);
             }
 
-            let clone = Message::new(msg.channel_id.to_string(), msg.id.to_string());
-            self.cleaner.delete_simple(clone, &self);
+            self.cleaner.delete_simple(msg, &self);
             if current_progress - last_print_progress > 5.0 || current_progress == 0.0 {
                 print!("{:.2}%", current_progress);
                 last_print_progress = current_progress;
@@ -107,16 +95,6 @@ impl CLI {
             }
             i += 1;
         }
-    }
-
-    fn ask_for_input() -> String {
-        let mut user_input = String::new();
-        let _ = io::stdout().flush();
-
-        io::stdin()
-            .read_line(&mut user_input)
-            .expect("Failed to read line");
-
-        user_input.trim().to_string()
+        println!("100%\ndone!")
     }
 }

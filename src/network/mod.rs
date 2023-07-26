@@ -19,8 +19,7 @@ impl Cleaner {
         }
     }
 
-    pub fn delete_simple(&self, msg: Message, cli: &CLI) {
-        let copy = Message::new(msg.channel_id.to_string(), msg.id.to_string());
+    pub fn delete_simple(&self, msg: &Message, cli: &CLI) {
         let has_error;
 
         match self.delete_msg(msg) {
@@ -34,19 +33,19 @@ impl Cleaner {
         }
 
         if has_error {
-            let res = cli.save_failed_msg(copy);
+            let res = cli.save_failed_msg(msg);
             if res.is_some() {
                 eprintln!("Failed to store failed msg -> {}", res.unwrap());
             }
         }
     }
 
-    pub fn delete_msg(&self, msg: Message) -> Result<Response, Error> {
+    pub fn delete_msg(&self, msg: &Message) -> Result<Response, Error> {
         let url = format!("{}channels/{}/messages/{}", self.base_url, msg.channel_id, msg.id);
         let agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 \
         (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36";
         ureq::delete(&*url)
-            .set("Authorization", &*self.auth_token)
+            .set("Authorization", self.auth_token.as_str())
             .set("User-Agent", agent)
             .call()
     }
