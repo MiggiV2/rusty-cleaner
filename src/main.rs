@@ -9,7 +9,7 @@ fn main() {
     if let Err(e) = cli {
         eprintln!("Failed -> {}", e);
     } else {
-        let cli = cli.unwrap();
+        let mut cli = cli.unwrap();
         cli.delete_all();
     }
 }
