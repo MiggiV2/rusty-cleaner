@@ -15,7 +15,7 @@ impl CLI {
         let path = self.package_path.to_string() + MAIN_SEPARATOR_STR + channel_dir.as_str()
             + MAIN_SEPARATOR_STR + "messages.csv";
 
-        let contents = self.read_file(msg, &path);
+        let contents = self.read_content(msg, &path);
         self.save_content(path, contents);
         None
     }
@@ -33,20 +33,17 @@ impl CLI {
         }
     }
 
-    fn read_file(&self, msg: &Message, path: &String) -> String {
+    fn read_content(&self, msg: &Message, path: &String) -> String {
         let mut contents = "ID,Timestamp,Contents,Attachments\n".to_string()
             + msg.id.as_str() + ",NULL,NULL,NULL";
-        match File::open(path.to_string()) {
-            Ok(f) => {
-                contents = String::new();
-                let mut buf_reader = BufReader::new(f);
-                let res = buf_reader.read_to_string(&mut contents);
-                if res.is_err() {
-                    eprintln!("Can't read msg file!");
-                }
-                contents = contents + "\n" + msg.id.as_str() + ",NULL,NULL,NULL";
+        if let Ok(f) = File::open(path) {
+            contents = String::new();
+            let mut buf_reader = BufReader::new(f);
+            let res = buf_reader.read_to_string(&mut contents);
+            if res.is_err() {
+                eprintln!("Can't read msg file!");
             }
-            Err(_) => {}
+            contents = contents + "\n" + msg.id.as_str() + ",NULL,NULL,NULL";
         }
         contents
     }
