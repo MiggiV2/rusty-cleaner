@@ -16,11 +16,11 @@ impl CLI {
             + MAIN_SEPARATOR_STR + "messages.csv";
 
         let contents = self.read_file(msg, &path);
-        self.save_msg(path, contents);
+        self.save_content(path, contents);
         None
     }
 
-    fn save_msg(&self, path: String, contents: String) {
+    pub(in crate::cli) fn save_content(&self, path: String, contents: String) {
         let file = File::create(path.to_string());
         if file.is_err() {
             eprintln!("Can't create message.csv -> {} - {}", path, file.err().unwrap());

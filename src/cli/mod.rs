@@ -56,6 +56,7 @@ impl CLI {
             return Some(value);
         }
 
+        // Need to restore last state
         let package = package.unwrap();
         for channel_dir in package {
             let channel = channel_dir.unwrap().path().display().to_string();
@@ -66,6 +67,8 @@ impl CLI {
             self.purge_channel(messages);
             self.move_finished(channel);
         }
+
+        self.remove_msg_and_ch_files();
         None
     }
 
@@ -78,9 +81,11 @@ impl CLI {
             if self.current_channel_id.is_empty() {
                 self.current_channel_id = msg.channel_id.to_string();
                 println!("\nChannel: {}", self.current_channel_id);
+                self.save_current_channel(msg);
             }
 
-            self.cleaner.delete_simple(msg, &self);
+            self.save_next_msg(msg);
+            // self.cleaner.delete_simple(msg, &self);
             if current_progress - last_print_progress > 5.0 || current_progress == 0.0 {
                 print!("{:.2}%", current_progress);
                 last_print_progress = current_progress;
